@@ -4,6 +4,11 @@
 /// STUDENT'S ANSWER BEGINS HERE
 ////////////////////////////////////////////////////////////////////////
 
+void signalHandler(int signal) {
+    cout << "\nCaught signal: " << signal << " (Segmentation fault)" << endl;
+    exit(1);
+}
+
 //3.1 Unit Class
 Unit::Unit(int quantity, int weight, Position pos):quantity(quantity), weight(weight), pos(pos){}
 
@@ -146,8 +151,11 @@ bool Vehicle :: isVehicle() const{
 }
 int UnitList::listSize(){
     Node* current = head;
-    int count;
-    while(current != nullptr) count++;
+    int count = 0;
+    while(current != nullptr) {
+        count++;
+        current = current -> next;
+    }
     return count;
 }
 int UnitList::getCapacity(){
@@ -174,19 +182,25 @@ bool UnitList::insert(Unit* unit){
         }
         else{
             cout << "entered here-2\n";
-            if(this -> listSize() >= this -> getCapacity()) return false;
+            cout << this -> listSize() << " and " << this -> getCapacity() << endl;
+            if(this -> listSize() >= this -> getCapacity()) {
+                cout << this -> listSize() << " and " << this -> getCapacity() << endl;
+                cout << "entered here-2.0\n"; 
+                return false;
+            }
             Node* newNode = new Node(unit);
             if(head == nullptr) {
+                cout << "entered here-2.1\n";
                 head = newNode;
                 return true;
             } else {
+                cout << "entered here-2.2\n";
                 Node* current = head;
                 while(current -> next != nullptr) current = current -> next;
-                newNode = current -> next;
                 current -> next = newNode;
                 return true;
             }
-
+            throw std::runtime_error("Got nothing inserted!");
         }
     }
     else{
@@ -205,6 +219,7 @@ bool UnitList::insert(Unit* unit){
             }
         }else{
             cout << "entered here-2\n";
+            cout << this -> listSize() << " and " << this -> getCapacity() << endl;
             if(this -> listSize() >= this -> getCapacity()) return false;
             Node* newNode = new Node(unit);
             newNode -> next = head;
@@ -243,25 +258,34 @@ bool UnitList::isContain(InfantryType infantryType){
 
 //str() Method
 string UnitList::str() const{
+    
+    
+    
     int countV = 0, countI = 0, i = 0;
     Node* current = head;
-    ostringstream unitlist;
-    cout << "got here!\n";
+    // ostringstream unitlist;
+    
+    string unitlist = "";
     while(current != nullptr){
+        // signal(SIGSEGV, signalHandler);
         if(current -> data -> isVehicle()) countV++;
         else countI++;
-        if(current -> next != nullptr) unitlist << current -> data -> str() << ",";
-        else unitlist << current -> data -> str();
-        cout << i++;
+        cout << "got here!\n";
+        unitlist += current -> data -> str();
+        if(current -> next != nullptr) unitlist += ';';
         current = current -> next;
     }
-
-    ostringstream oss;
+    cout << "got here!\n";
+    void (*prevHandler)(int) = signal(SIGSEGV, signalHandler);
+    string outstr = "UnitList[count_vehicle=" + to_string(countV) + ";count_infantry=" + to_string(countI) + ";" + unitlist + "]";
+    /* ostringstream oss;
     oss << "UnitList[count_vehicle=" << countV
         << ";count_infantry=" << countI
-        << ";" << unitlist.str();
-        
-    return oss.str();
+        << ";" << unitlist << "]";
+    
+    return oss.str(); */
+    return outstr;
+    signal(SIGSEGV, prevHandler);
 }
 ////////////////////////////////////////////////
 /// END OF STUDENT'S ANSWER
